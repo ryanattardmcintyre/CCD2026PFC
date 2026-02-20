@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using WebApplication2.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,15 @@ builder.Services
         options.Scope.Add("email");
         options.Scope.Add("profile");
     });
+
+//add scoped firestorerepository passing the project id: ccd63a2026, reading the project id from configuration
+builder.Services.AddScoped<FirestoreRepository>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var projectId = configuration["Firestore:ProjectId"];
+    return new FirestoreRepository(projectId);
+});
+
 
 var app = builder.Build();
 
