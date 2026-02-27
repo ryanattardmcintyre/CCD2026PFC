@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Microsoft.Extensions.Logging;
 using WebApplication2.Models.FirestoreModels;
 
 namespace WebApplication2.Repositories
@@ -50,7 +51,7 @@ namespace WebApplication2.Repositories
                 Event = eventId,
                 Quantity = qty,
                 BoughtOn = DateTime.UtcNow,
-                Price = Convert.ToDecimal(price),
+                Price = price,
                 UserEmail = userEmail
             };
            return await collection.AddAsync(ticket);
@@ -59,15 +60,23 @@ namespace WebApplication2.Repositories
         public List<Ticket> GetUserTickets(string userEmail)
         {
             var tickets = new List<Ticket>();
-            var collection = _firestoreDb.CollectionGroup("tickets").WhereEqualTo("UserEmail", userEmail);
-            var snapshot = collection.GetSnapshotAsync().Result;
-            foreach (var doc in snapshot.Documents)
+           
+            var listOfEvents = GetEvents();
+            foreach(var e in listOfEvents)
             {
-                if (doc.Exists)
+                var ticketsForEvent = _firestoreDb.Collection("events").Document(e.Id).Collection("tickets")
+                                        .WhereEqualTo("UserEmail", userEmail);
+
+                var snapshot = ticketsForEvent.GetSnapshotAsync().Result;
+                foreach (var doc in snapshot.Documents)
                 {
-                    var ticketData = doc.ConvertTo<Ticket>();
-                    ticketData.Id = doc.Id; // Set the ID from the document
-                    tickets.Add(ticketData);
+                    if (doc.Exists)
+                    {
+                        var ticketData = doc.ConvertTo<Ticket>();
+                        ticketData.Id = doc.Id; // Set the ID from the document
+                        ticketData.Event = e.Name;
+                        tickets.Add(ticketData);
+                    }
                 }
             }
             return tickets;

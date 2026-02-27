@@ -15,7 +15,7 @@ namespace WebApplication2.Models.FirestoreModels
         public int Quantity { get; set; }
         
         [FirestoreProperty]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
         
         [FirestoreProperty]
         public DateTime BoughtOn { get; set; }

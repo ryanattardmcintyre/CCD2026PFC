@@ -1,0 +1,32 @@
+﻿@model List<WebApplication2.Models.FirestoreModels.Ticket>
+
+
+@{
+    ViewData["Title"] = "My Tickets";
+}
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Event</th>
+            <th>User Email</th>
+            <th>Quantity</th>
+            <th>Bought On</th>
+            <th>Total price</th>
+        </tr>
+    </thead>
+@foreach(var ticket in Model)
+{
+ <tr>
+        <td>@ticket.Id</td>
+        <td>@ticket.Event</td>
+            <td>@ticket.UserEmail</td>
+            <td>@ticket.Quantity</td>
+            <td>@ticket.BoughtOn.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@ticket.Price</td>
+ </tr>
+
+}
+</table>
