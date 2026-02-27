@@ -19,5 +19,8 @@ namespace WebApplication2.Models.FirestoreModels
         
         [FirestoreProperty]
         public DateTime BoughtOn { get; set; }
+
+        [FirestoreProperty]
+        public string UserEmail { get; set; }
     }
 }

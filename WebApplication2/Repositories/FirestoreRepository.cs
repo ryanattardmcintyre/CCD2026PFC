@@ -12,8 +12,10 @@ namespace WebApplication2.Repositories
             _firestoreDb = FirestoreDb.Create(projectId);
         }
 
+        //---------------------------- Events ----------------------------
         public List<Event> GetEvents()
-        {   var events = new List<Event>();
+        {
+            var events = new List<Event>();
             var collection = _firestoreDb.Collection("events");
             var snapshot = collection.GetSnapshotAsync().Result;
             foreach (var doc in snapshot.Documents)
@@ -28,6 +30,47 @@ namespace WebApplication2.Repositories
             return events;
         }
 
+        //----------------------------- Users ----------------------------
 
+        public async void AddUserAsync(User user)
+        {
+            var collection = _firestoreDb.Collection("users");
+            var docRef = collection.Document(user.Email);
+            await docRef.SetAsync(user);
+        }
+
+
+        //----------------------------- Tickets ----------------------------
+
+        public async Task<DocumentReference> AddTicketAsync(string userEmail, string eventId, int qty, double price)
+        {
+            var collection = _firestoreDb.Collection("events").Document(eventId).Collection("tickets");
+            var ticket = new Ticket
+            {
+                Event = eventId,
+                Quantity = qty,
+                BoughtOn = DateTime.UtcNow,
+                Price = Convert.ToDecimal(price),
+                UserEmail = userEmail
+            };
+           return await collection.AddAsync(ticket);
+        }
+
+        public List<Ticket> GetUserTickets(string userEmail)
+        {
+            var tickets = new List<Ticket>();
+            var collection = _firestoreDb.CollectionGroup("tickets").WhereEqualTo("UserEmail", userEmail);
+            var snapshot = collection.GetSnapshotAsync().Result;
+            foreach (var doc in snapshot.Documents)
+            {
+                if (doc.Exists)
+                {
+                    var ticketData = doc.ConvertTo<Ticket>();
+                    ticketData.Id = doc.Id; // Set the ID from the document
+                    tickets.Add(ticketData);
+                }
+            }
+            return tickets;
+        }
     }
 }

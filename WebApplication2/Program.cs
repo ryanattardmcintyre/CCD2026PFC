@@ -4,6 +4,11 @@ using WebApplication2.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Environment.SetEnvironmentVariable
+    ("GOOGLE_APPLICATION_CREDENTIALS", 
+    "C:\\Users\\attar\\Source\\Repos\\CCD2026PFCv2\\WebApplication2\\ccd63a2026-7af4d41f03a9.json");
+
+
 // MVC (views + controllers)
 builder.Services.AddControllersWithViews();
 
