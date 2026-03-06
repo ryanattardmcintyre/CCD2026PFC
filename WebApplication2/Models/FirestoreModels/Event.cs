@@ -22,5 +22,15 @@ namespace WebApplication2.Models.FirestoreModels
 
         [FirestoreProperty]
         public double Price { get; set; }
+
+        [FirestoreProperty]
+        public string Poster { get; set; }
+        
+        [FirestoreProperty]
+        public string GuestList { get; set; }
+        
+        [FirestoreProperty]
+        public string Organiser { get; set; }
+
     }
 }
