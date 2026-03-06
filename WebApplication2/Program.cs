@@ -48,6 +48,8 @@ builder.Services.AddScoped<FirestoreRepository>(provider =>
     return new FirestoreRepository(projectId);
 });
 
+builder.Services.AddScoped<BucketsRepository>();
+
 
 var app = builder.Build();
 
