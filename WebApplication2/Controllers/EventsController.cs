@@ -13,17 +13,34 @@ namespace WebApplication2.Controllers
     {
         private readonly FirestoreRepository _firestoreRepository;
         private readonly BucketsRepository _bucketsRepository;
+        private readonly CacheRepository _cacheRepository;
         public EventsController(FirestoreRepository firestoreRepository, 
-            BucketsRepository bucketsRepository)
+            BucketsRepository bucketsRepository, CacheRepository cacheRepository)
         { _firestoreRepository = firestoreRepository;
             _bucketsRepository = bucketsRepository;
+            _cacheRepository = cacheRepository;
         }
 
 
         public IActionResult Index()
         {
+           /* DateTime fireStoreTimeStart = DateTime.Now;
             var listOfEvents = _firestoreRepository.GetEvents();
-            return View(listOfEvents);
+            TimeSpan tsFirestore = DateTime.Now.Subtract(fireStoreTimeStart);
+
+
+            //for the experiment we are synching the two
+            foreach(var e in listOfEvents)
+            {
+                _cacheRepository.AppendEvent(e);
+            }
+           */
+
+            DateTime cacheTimeStart = DateTime.Now;
+            var listOfEventsForCache = _cacheRepository.GetEvents();
+            TimeSpan tsCache = DateTime.Now.Subtract(cacheTimeStart);
+
+            return View(listOfEventsForCache);
         }
 
         //this will load the page with empty fields
@@ -42,26 +59,29 @@ namespace WebApplication2.Controllers
                 posterPath = await _bucketsRepository.Upload(myPoster, config.GetValue<string>("PosterBucket"),
                     poster.FileName);
             }
-            using (var myGuestList = guestList.OpenReadStream())
+
+            if (guestList != null)
             {
-               guestListPath = await _bucketsRepository.Upload(myGuestList, config.GetValue<string>("GuestListBucket"),
-                    guestList.FileName);
+                using (var myGuestList = guestList.OpenReadStream())
+                {
+                    guestListPath = await _bucketsRepository.Upload(myGuestList, config.GetValue<string>("GuestListBucket"),
+                         guestList.FileName);
+                }
+                int lastSlashIndex = guestListPath.LastIndexOf('/');
+                string filename = guestListPath.Substring(lastSlashIndex + 1);
+
+                string guestListFormedPath = await _bucketsRepository.AssignPermission(config.GetValue<string>("GuestListBucket"), eventObj.Organiser,
+                    filename);
+
+                eventObj.GuestList = guestListFormedPath;
             }
-
-
-            int lastSlashIndex = guestListPath.LastIndexOf('/');
-            string filename =  guestListPath.Substring(lastSlashIndex + 1); 
-
-            string guestListFormedPath = await _bucketsRepository.AssignPermission(config.GetValue<string>("GuestListBucket"), eventObj.Organiser, 
-                filename);
-
-            eventObj.GuestList = guestListFormedPath;
             eventObj.Poster = posterPath;   
 
             eventObj.Date = eventObj.Date.ToUniversalTime(); // Convert to UTC before storing
 
-            _firestoreRepository.AddEventAsync(eventObj);
+            await _firestoreRepository.AddEventAsync(eventObj);
 
+            _cacheRepository.AppendEvent(eventObj);
 
             TempData["success"] = "Event created successfully!";
 

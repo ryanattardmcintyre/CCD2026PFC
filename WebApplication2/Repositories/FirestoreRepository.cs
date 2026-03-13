@@ -31,11 +31,11 @@ namespace WebApplication2.Repositories
             return events;
         }
 
-        public async void AddEventAsync(Event eventObj)
+        public async Task<WriteResult> AddEventAsync(Event eventObj)
         {
             var collection = _firestoreDb.Collection("events");
             var docRef = collection.Document();
-            await docRef.SetAsync(eventObj);
+            return await docRef.SetAsync(eventObj);
         }
 
         //----------------------------- Users ----------------------------

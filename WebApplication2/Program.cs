@@ -50,6 +50,12 @@ builder.Services.AddScoped<FirestoreRepository>(provider =>
 
 builder.Services.AddScoped<BucketsRepository>();
 
+string redisPassword = builder.Configuration["Redis:Password"];
+
+builder.Services.AddScoped<CacheRepository>(provider =>
+{
+    return new CacheRepository(redisPassword);
+});
 
 var app = builder.Build();
 
