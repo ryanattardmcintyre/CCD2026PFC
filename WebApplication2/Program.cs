@@ -48,6 +48,13 @@ builder.Services.AddScoped<FirestoreRepository>(provider =>
     return new FirestoreRepository(projectId);
 });
 
+builder.Services.AddScoped<PublisherRepository>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var projectId = configuration["Firestore:ProjectId"];
+    return new PublisherRepository(projectId, "ccd63a2026");
+});
+
 builder.Services.AddScoped<BucketsRepository>();
 
 string redisPassword = builder.Configuration["Redis:Password"];

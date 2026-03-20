@@ -7,9 +7,11 @@ namespace WebApplication2.Controllers
     public class TicketsController : Controller
     {
         private FirestoreRepository _firestoreRepository;
-        public TicketsController(FirestoreRepository firestoreRepository)
+        private PublisherRepository _publisherRepository;
+        public TicketsController(FirestoreRepository firestoreRepository, PublisherRepository publisherRepository)
         {
             _firestoreRepository = firestoreRepository;
+            _publisherRepository = publisherRepository;
         }
 
         [Authorize] //protects a method from being accessed anonymously
@@ -34,7 +36,19 @@ namespace WebApplication2.Controllers
                 double price = _firestoreRepository.GetEvents().SingleOrDefault(x => x.Id == eventId)?.Price ?? 0;
                 price *= qty;
                 //discounts workings
-                await _firestoreRepository.AddTicketAsync(emailAddress, eventId, qty, price);
+                 var docReference = await _firestoreRepository.AddTicketAsync(emailAddress, eventId, qty, price);
+
+                await _publisherRepository.PublishMessageWithCustomAttributesAsync(
+                      new Models.FirestoreModels.Ticket()
+                      {
+                          BoughtOn = DateTime.UtcNow,
+                          Price = price,
+                          Event = eventId,
+                           Quantity = qty,
+                            UserEmail = emailAddress,
+                            Id= docReference.Id
+                      }
+                    );
 
                 TempData["success"] = "Ticket bought successfully!"; //this is a way how to pass a message back to the view 
             }
