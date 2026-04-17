@@ -8,6 +8,11 @@ Environment.SetEnvironmentVariable
     ("GOOGLE_APPLICATION_CREDENTIALS", 
     "C:\\Users\\attar\\Source\\Repos\\CCD2026PFCv2\\WebApplication2\\ccd63a2026-7af4d41f03a9.json");
 
+SecretManagerRepository secretManagerRepository = new SecretManagerRepository();
+
+string googleClientId = secretManagerRepository.GetSecret("ccd63a2026", "Authentication:Google:ClientId");
+string googleClientSecret = secretManagerRepository.GetSecret("ccd63a2026", "Authentication:Google:ClientSecret");
+string redisPassword = secretManagerRepository.GetSecret("ccd63a2026", "Redis:Password");
 
 // MVC (views + controllers)
 builder.Services.AddControllersWithViews();
@@ -32,8 +37,8 @@ builder.Services
     .AddGoogle(options =>
     {
         // Prefer config, but leaving hardcoded since you currently have it that way
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
 
         // Optional: ensure email is included in claims
         options.Scope.Add("email");
@@ -57,7 +62,7 @@ builder.Services.AddScoped<PublisherRepository>(provider =>
 
 builder.Services.AddScoped<BucketsRepository>();
 
-string redisPassword = builder.Configuration["Redis:Password"];
+
 
 builder.Services.AddScoped<CacheRepository>(provider =>
 {

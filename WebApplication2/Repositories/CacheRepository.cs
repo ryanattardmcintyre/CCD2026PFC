@@ -8,12 +8,14 @@ namespace WebApplication2.Repositories
     {
         private IDatabase _db;
 
+        
+
         public CacheRepository(string password)
         {
             var muxer = ConnectionMultiplexer.Connect(
                    new ConfigurationOptions
                    {
-                       EndPoints = { { "redis-12211.c304.europe-west1-2.gce.cloud.redislabs.com", 12211 } },
+                       EndPoints = { { "redis-15928.crce214.us-east-1-3.ec2.cloud.redislabs.com", 15928 } },
                        User = "default",
                        Password = password
                    }
