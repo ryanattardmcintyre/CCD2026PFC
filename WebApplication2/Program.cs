@@ -4,9 +4,13 @@ using WebApplication2.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Environment.SetEnvironmentVariable
-    ("GOOGLE_APPLICATION_CREDENTIALS", 
-    "C:\\Users\\attar\\Source\\Repos\\CCD2026PFCv2\\WebApplication2\\ccd63a2026-7af4d41f03a9.json");
+// Works both locally and inside Docker
+var credentialsPath = Path.Combine(AppContext.BaseDirectory, "ccd63a2026-7af4d41f03a9.json");
+
+Environment.SetEnvironmentVariable(
+    "GOOGLE_APPLICATION_CREDENTIALS",
+    credentialsPath
+);
 
 SecretManagerRepository secretManagerRepository = new SecretManagerRepository();
 
@@ -14,10 +18,10 @@ string googleClientId = secretManagerRepository.GetSecret("ccd63a2026", "Authent
 string googleClientSecret = secretManagerRepository.GetSecret("ccd63a2026", "Authentication:Google:ClientSecret");
 string redisPassword = secretManagerRepository.GetSecret("ccd63a2026", "Redis:Password");
 
-// MVC (views + controllers)
+// MVC
 builder.Services.AddControllersWithViews();
 
-// Auth: Cookies + Google
+// Auth
 builder.Services
     .AddAuthentication(options =>
     {
@@ -26,26 +30,19 @@ builder.Services
     })
     .AddCookie(options =>
     {
-        // Where unauthenticated users get redirected (your controller should Challenge Google)
         options.LoginPath = "/auth/login";
         options.LogoutPath = "/auth/logout";
-
-        // Optional: cookie settings
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromDays(14);
     })
     .AddGoogle(options =>
     {
-        // Prefer config, but leaving hardcoded since you currently have it that way
         options.ClientId = googleClientId;
         options.ClientSecret = googleClientSecret;
-
-        // Optional: ensure email is included in claims
         options.Scope.Add("email");
         options.Scope.Add("profile");
     });
 
-//add scoped firestorerepository passing the project id: ccd63a2026, reading the project id from configuration
 builder.Services.AddScoped<FirestoreRepository>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
@@ -61,8 +58,7 @@ builder.Services.AddScoped<PublisherRepository>(provider =>
 });
 
 builder.Services.AddScoped<BucketsRepository>();
-
-
+builder.Services.AddScoped<VisionAPIRepository>();
 
 builder.Services.AddScoped<CacheRepository>(provider =>
 {
@@ -71,7 +67,6 @@ builder.Services.AddScoped<CacheRepository>(provider =>
 
 var app = builder.Build();
 
-// Pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -86,7 +81,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Routes
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

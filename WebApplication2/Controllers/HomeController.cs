@@ -1,14 +1,47 @@
 using Google.Cloud.Logging.Type;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Diagnostics;
 using WebApplication2.Models;
 using WebApplication2.Repositories;
 
 namespace WebApplication2.Controllers
 {
+
+    public class Appointment
+    {
+        public string date { get; set; }
+        public string time { get; set; }
+        public string client { get; set; }
+        public string status { get; set; }
+    }
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+
+        public async Task<IActionResult> Test([FromServices] FirestoreRepository firestore)
+        {
+            string appointments = "C:\\Users\\attar\\Downloads\\appointments.json";
+
+            StreamReader sr = new StreamReader(appointments);
+
+            string appointmentsRead = sr.ReadToEnd();
+            sr.Close();
+
+           List<Appointment> appointmentsObject =
+                JsonConvert.DeserializeObject<List<Appointment>>(appointmentsRead);
+
+
+            foreach(var a in appointmentsObject)
+            {
+                await firestore.AddAppointmentAsync(a);
+            }
+
+            return Content("done");
+
+        }
+
 
         public HomeController(ILogger<HomeController> logger)
         {

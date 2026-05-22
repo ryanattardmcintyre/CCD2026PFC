@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Microsoft.Extensions.Logging;
+using WebApplication2.Controllers;
 using WebApplication2.Models.FirestoreModels;
 
 namespace WebApplication2.Repositories
@@ -12,6 +13,15 @@ namespace WebApplication2.Repositories
             // Initialize Firestore client here
             _firestoreDb = FirestoreDb.Create(projectId);
         }
+        public async Task<WriteResult> AddAppointmentAsync(Appointment a)
+        {
+            var collection = _firestoreDb.Collection("appointment");
+            var docRef = collection.Document();
+            return await docRef.SetAsync(a);
+        }
+
+
+
 
         //---------------------------- Events ----------------------------
         public List<Event> GetEvents()

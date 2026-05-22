@@ -2,6 +2,8 @@
 using WebApplication2.Models.FirestoreModels;
 using WebApplication2.Repositories;
 
+
+
 namespace WebApplication2.Controllers
 {
 
@@ -14,11 +16,25 @@ namespace WebApplication2.Controllers
         private readonly FirestoreRepository _firestoreRepository;
         private readonly BucketsRepository _bucketsRepository;
         private readonly CacheRepository _cacheRepository;
+        private readonly VisionAPIRepository _visionAPIRepository;
         public EventsController(FirestoreRepository firestoreRepository, 
-            BucketsRepository bucketsRepository, CacheRepository cacheRepository)
+            BucketsRepository bucketsRepository, CacheRepository cacheRepository
+            , VisionAPIRepository visionAPIRepository)
         { _firestoreRepository = firestoreRepository;
             _bucketsRepository = bucketsRepository;
             _cacheRepository = cacheRepository;
+            _visionAPIRepository = visionAPIRepository;
+        }
+
+
+        public async Task<IActionResult> ExtractText(string imageId)
+        {
+            // Call the OCR service to extract text from the image
+
+            string filename = Path.GetFileName(imageId);
+            string extractedText = await _visionAPIRepository.ProcessImage(filename);
+            // Return the extracted text as a response
+            return Content(extractedText);
         }
 
 

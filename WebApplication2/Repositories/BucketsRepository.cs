@@ -7,6 +7,25 @@ namespace WebApplication2.Repositories
 {
     public class BucketsRepository
     {
+        private IWebHostEnvironment _webHostEnvironment;
+        public BucketsRepository(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        public async Task<string> DownloadImage(string bucketName, string filename)
+        {
+            string destinationPath = Path.Combine(_webHostEnvironment.WebRootPath, "downloads", filename);
+
+            var storage = StorageClient.Create();
+            using (var outputFile = File.OpenWrite(destinationPath))
+            {
+                await storage.DownloadObjectAsync(bucketName, filename, outputFile);
+            }
+
+            return destinationPath;
+        }
+
         public async Task<string> Upload(Stream file, string bucketName, string filename)
         {
             var storage = StorageClient.Create();
